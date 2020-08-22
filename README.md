@@ -1,37 +1,70 @@
-# wisdom-advisor
+## Introduction
+Wisdom-advisor is a tunning framework aimming at improving the performance of applications using scheduling or
+other methods.
+Two policy is supported now in wisdom-advisor:
+1. Thread affinity: schedule threads according to their affinity(the affinity can be specified by users or automatic detection).
+2. Thread grouping: scheduling threads according to what they are doing.
 
-#### 介绍
-Wisdom-advisor is a tunning framework aimming at improving the performance of applications.
+There are several functions optinal that assist scheduling decision like NUMA affinity detection which can
+reduce access cross-NUMA memory, net affinity detection which can detect net accessing processes
+and get the perferred NUMA node according to the net device they use and more.
 
-#### 软件架构
-软件架构说明
+Wisdom-advisor now support arm64 architectrue, support for x86 is on the way.
+Wisdom-advisor should run with root privileges.
+## Build
+Please note that go environment is needed and one accessible goproxy server is necessary for Go Modules is used here to manage vendoring packages.
 
+To set available proxy, please refer to [Go Module Proxy](https://proxy.golang.org)
+```
+mkdir -p $GOPATH/src/gitee.com
+cd $GOPATH/src/gitee.com
+git clone <wisdom-advisor project>
+cd wisdom-advisor
+export GO111MODULE=on
+go mod vendor
+make
+```
+wisdomd binary file is in $GOPATH/pkg/
 
-#### 安装教程
+Run testcases
+```
+make check
+```
+## Install
+In wisdom-advisor project directory.
+```
+make install
+```
+## How to use
+Get help infomation
+```
+wisdomd -h
+```
+When using thread affinity policy without automatic detection. Wisdomd will get group information from /proc/pid/envrion
+and auto set affinity for threads in group. Group environment variable format is as below:
+\_\_SCHED\_GROUP\_\<group\_name\>=thread\_name1,thread\_name2...
+```
+wisdomd --policy threadsaffinity 
+```
+Or we can use automatic detection.
+```
+wisdomd --policy threadsaffinity --affinityAware
+```
+When using thread grouping, CPU partition description json script should be provided.
+```
+wisdomd --policy threadsgrouping --json XXX.json
+```
+Wisdomd will do some scanning when using threadsaffinity policy with automatic detection and threadsgrouping policy and
+this scanning opertation can be shutdown or restart.
+```
+wisdom --scan start
+wisdom --scan stop
+```
+Other options can be found in help information.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 码云特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5.  码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+Note: 
+For security consideration, the json script that describe CPU partition should be set with appropriate umask.
+Normal users should not have the wirte or access permissions.
+When not necessary, scan should be stop.
+## Licensing
+Wisdom is licensed under the Mulan PSL v2.
