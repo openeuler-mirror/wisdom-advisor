@@ -34,6 +34,11 @@ const invalidPeriod2 = -1
 
 // TestFullProcedure is to test the whole procedure
 func TestFullProcedure(t *testing.T) {
+	//socket can not be created in obs
+	_, err := listenUnixSock(cmdSocketPath)
+	if err != nil {
+		return
+	}
 	_, _, taskStub := testlib.InitStub()
 	tids := taskStub.CreateTasks(testThreadNum)
 
