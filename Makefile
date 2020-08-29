@@ -14,12 +14,16 @@ all: wisdomd wisdom
 wisdomd:
 	export GOPATH=`cd ../../../;pwd`;\
 	export PATH=$$GOPATH/bin:$$PATH;\
-	go build -mod=vendor -ldflags '-w -s -extldflags=-static -extldflags=-zrelro -extldflags=-znow -buildmode=pie -tmpdir /tmp -X main.version=${VERSION}' -v -o $$GOPATH/pkg/wisdomd $$GOPATH/src/gitee.com/wisdom-advisor/cmd/wisdomd
+	rm -rf tmp1;\
+	mkdir tmp1;\
+	go build -mod=vendor -ldflags '-w -s -extldflags=-static -extldflags=-zrelro -extldflags=-znow -buildmode=pie -tmpdir tmp1 -X main.version=${VERSION}' -v -o $$GOPATH/pkg/wisdomd $$GOPATH/src/gitee.com/wisdom-advisor/cmd/wisdomd
 
 wisdom:
 	export GOPATH=`cd ../../../;pwd`;\
 	export PATH=$$GOPATH/bin:$$PATH;\
-	go build -mod=vendor -ldflags '-w -s -extldflags=-static -extldflags=-zrelro -extldflags=-znow -buildmode=pie -tmpdir /tmp -X main.version=${VERSION}' -v -o $$GOPATH/pkg/wisdom $$GOPATH/src/gitee.com/wisdom-advisor/cmd/wisdom
+	rm -rf tmp2;\
+	mkdir tmp2;\
+	go build -mod=vendor -ldflags '-w -s -extldflags=-static -extldflags=-zrelro -extldflags=-znow -buildmode=pie -tmpdir tmp2 -X main.version=${VERSION}' -v -o $$GOPATH/pkg/wisdom $$GOPATH/src/gitee.com/wisdom-advisor/cmd/wisdom
 
 format :
 	export GOPATH=`cd ../../..;pwd` && gofmt -e -s -w cmd

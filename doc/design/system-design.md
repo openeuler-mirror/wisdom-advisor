@@ -2,11 +2,11 @@
 
 ## 背景
 
-服务器多数支持多路CPU，CPU tope支撑NUMA架构，对于CPU来说，跨P访问内存时延是最大的，跨die访问次之，传统Linux内核的调度算法默认认为所有节点是一样的，负载均衡和调度策略都是基于此来做的，这对arm64来说不太实用，从前期的实践来说，通过人工绑核手段可以显著的提升性能，但是这种方式缺乏灵活性。
+服务器一般支持多路CPU，支撑NUMA架构，对于CPU来说，跨P访问内存时延是最大的，跨die访问次之，传统Linux内核的调度算法默认认为所有节点是一样的，负载均衡和调度策略都是基于此来做的，这对arm64来说不太实用，从前期的实践来说，通过人工绑核手段可以显著的提升性能，但是这种方式缺乏灵活性。
 
 方案实现思路
 
-由于arm64 上性能的瓶颈主要是跨P访问内存带来的开销，因此解决性能问题的主要从以下出发点来考虑
+由于arm64上性能的瓶颈主要是跨P访问内存带来的开销，因此解决性能问题的主要从以下出发点来考虑
 
 限制进程的跨P迁移，确保进程在一个节点内部，并且从效率上来讲，尽量不要做迁移; 
 
@@ -16,6 +16,11 @@
 
 本文优先考虑基于一种应用来达到优化的目的，来实现cpu资源管理策略机制，避免用户修改代码或者通过手动绑核的方式去优化的目的，为适配更多应用做准备。
 
+以下图（来源https://en.wikichip.org/wiki/hisilicon/microarchitectures/taishan_v110）海思hi1620为例，4个core组成CCL ，8个CCL组成SCCL，在一块处理器上共有64核。在泰山 2280系列服务器上（来源https://support.huawei.com/enterprise/zh/doc/EDOC1100088652/274043ea），集成了两块海思hi1620处理器
+
+![img](https://en.wikichip.org/w/images/thumb/7/76/taishan_v110_soc_details.svg/1400px-taishan_v110_soc_details.svg.png)
+
+![点击放大](https://download.huawei.com/mdl/imgDownload?uuid=ea07ef6dc35a4c0cb1241b7df4960ba3)
 
 ## 功能简介
 
