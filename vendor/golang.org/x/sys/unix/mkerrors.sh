@@ -193,7 +193,6 @@ struct ltchars {
 #include <sys/xattr.h>
 #include <linux/bpf.h>
 #include <linux/can.h>
-#include <linux/can/error.h>
 #include <linux/capability.h>
 #include <linux/cryptouser.h>
 #include <linux/devlink.h>

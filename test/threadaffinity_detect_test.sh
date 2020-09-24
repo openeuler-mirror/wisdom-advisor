@@ -16,8 +16,11 @@ function do_test() {
 	local group
 
 	export GOPATH=`cd ../../../../;pwd`
-	"$GOPATH"/pkg/wisdomd --policy threadsaffinity -printlog --affinityAware --task sem --loglevel debug --tracetime=5 --period=10 &>tmp.log &
+	
+	"$GOPATH"/pkg/wisdomd --printlog --loglevel debug &
 	pid=`echo $!`
+	sleep 5
+	"$GOPATH"/pkg/wisdom --printlog --loglevel debug threadsaffinity --percore --task sem  --tracetime=5 --period=10
 	if [  "$pid"x == ""x ]; then
 		echo "start wisdomd fail"
 		rm tmp.log

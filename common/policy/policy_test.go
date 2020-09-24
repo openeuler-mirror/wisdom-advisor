@@ -38,7 +38,7 @@ const testSleepTime = 1
 const nodeCPUNum = 4
 const testThreadNum = 1
 const groupThreadNum = 4
-const coarseGrainThreadNum = 1
+const PerCoreThreadNum = 1
 const noMigrateGap = 20
 const migrateGap = 40
 const numerousTaskNum = 500
@@ -398,7 +398,7 @@ func TestSwitchCclAware(t *testing.T) {
 	var block ControlBlock
 	topoStub, _, taskStub := testlib.InitStub()
 	tids := taskStub.CreateTasks(testThreadNum)
-	SwitchCoarseGrain(true)
+	SwitchPerCore(false)
 	if err := Init(); err != nil {
 		t.Errorf("init policy failed\n")
 	}
@@ -441,35 +441,35 @@ func TestSwitchCclAware(t *testing.T) {
 	testlib.CleanStub()
 }
 
-// TestSwitchCoarseGrain test coarseGrain switch
-func TestSwitchCoarseGrain(t *testing.T) {
+// TestSwitchPerCore test PerCore switch
+func TestSwitchPerCore(t *testing.T) {
 	var block ControlBlock
 	_, _, taskStub := testlib.InitStub()
 	tids := taskStub.CreateTasks(testThreadNum)
 	if err := Init(); err != nil {
 		t.Errorf("init policy failed\n")
 	}
-	// turn coarseGrain on
-	SwitchCoarseGrain(true)
+	// turn PerCore off
+	SwitchPerCore(false)
 	BindTasksPolicy(&block)
 	cpus, err := testlib.GetAffinityStub(tids[0])
 	if err != nil {
 		t.Error(err.Error())
 	}
 	fmt.Printf("coarseOn cpus %v", cpus)
-	if len(cpus) == coarseGrainThreadNum {
-		t.Errorf("affinity cpu number is 1 when coarseGrain on")
+	if len(cpus) == PerCoreThreadNum {
+		t.Errorf("affinity cpu number is 1 when PerCore on")
 	}
 	UnbindTaskPolicy(tids[0])
-	//  turn coarseGrain off
-	SwitchCoarseGrain(false)
+	//  turn PerCore on
+	SwitchPerCore(true)
 	BindTasksPolicy(&block)
 	cpus, err = testlib.GetAffinityStub(tids[0])
 	if err != nil {
 		t.Errorf("get affinity failed")
 	}
 	if len(cpus) != 1 {
-		t.Errorf("affinity cpu number is not 1 when coarseGrain off")
+		t.Errorf("affinity cpu number is not 1 when PerCore off")
 	}
 	UnbindTaskPolicy(tids[0])
 	testlib.CleanStub()

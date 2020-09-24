@@ -17,9 +17,7 @@ import (
 	"fmt"
 	"gitee.com/wisdom-advisor/common/ptrace"
 	"gitee.com/wisdom-advisor/common/sched"
-	"io/ioutil"
 	"math/rand"
-	"os"
 	"testing"
 	"time"
 )
@@ -87,25 +85,8 @@ func setThreadAffinity(tid uint64, cpu []int) error {
 }
 
 // TestParseConfig test ParseConfig
-func TestParseConfig(t *testing.T) {
-	data := []byte("{\n")
-	data = append(data, []byte("	\"io\": [\n")...)
-	data = append(data, []byte("		\"0-3\",\n")...)
-	data = append(data, []byte("		\"92-95\"\n")...)
-	data = append(data, []byte("	],\n")...)
-	data = append(data, []byte("	\"net\": [\n")...)
-	data = append(data, []byte("		\"48-91\",\n")...)
-	data = append(data, []byte("		\"4-47\"\n")...)
-	data = append(data, []byte("	]\n")...)
-	data = append(data, []byte("}\n")...)
-
-	err := ioutil.WriteFile("./tmp.json", data, defaultPerm)
-	if err != nil {
-		t.Errorf("Create fake json fail\n")
-	}
-	defer os.Remove("./tmp.json")
-
-	party, err := ParseConfig("./tmp.json")
+func TestParsePartition(t *testing.T) {
+	party, err := ParsePartition("0-3,92-95","48-91,4-47")
 	if err != nil {
 		t.Errorf("Parse json fail")
 	}

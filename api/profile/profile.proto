@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option go_package ="api/profile";
+
+package profile;
+
+service WisdomMgr {
+    rpc StartUserSetBind(UserSetPolicy) returns (Ack) {}
+    rpc StartAutoThreadAffinityBind(DetectPolicy) returns (Ack) {}
+    rpc StartThreadGrouping(CPUPartition) returns (Ack) {}
+    rpc SetScan(Switch) returns (Ack) {}
+}
+
+message Ack {
+    string Status = 1;
+}
+
+message TracePara {
+    uint64 TraceTime = 1;
+    uint32 Period  = 2;
+}
+
+message CPUPartition {
+    string TaskName = 1;
+    string IOCPUlist = 2;
+    string NetCPUlist = 3;
+    TracePara Trace = 4;
+}
+
+message Switch{
+    bool Start = 1;
+}
+
+message BindMethod{
+    bool NetAwareBind = 1;
+    bool CCLBind = 2;
+    bool PerCoreBind = 3;
+}
+message DetectPolicy {
+    string TaskName = 1;
+    TracePara Trace = 2;
+    BindMethod Bind = 3;
+}
+message UserSetPolicy {
+    BindMethod Bind = 1;
+}
+

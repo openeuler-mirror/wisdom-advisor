@@ -16,21 +16,14 @@ package ptrace
 
 import (
 	"fmt"
-	"syscall"
 	"unsafe"
+	unix "golang.org/x/sys/unix"
+	"syscall"
 )
-
-// UserPtRegsArm64 are the registers contain process context
-type UserPtRegsArm64 struct {
-	Regs   [31]uint64
-	SP     uint64
-	PC     uint64
-	PState uint64
-}
 
 // Ptrace wraps ptrace syscall
 func Ptrace(request uint64, pid uint64, addr uint64, data uint64) error {
-	if _, _, errno := syscall.RawSyscall6(syscall.SYS_PTRACE,
+	if _, _, errno := syscall.RawSyscall6(unix.SYS_PTRACE,
 		uintptr(request), uintptr(pid), uintptr(addr), uintptr(data), 0, 0); errno != 0 {
 		return fmt.Errorf("Ptrace fail no:%d", errno)
 	}
@@ -39,32 +32,31 @@ func Ptrace(request uint64, pid uint64, addr uint64, data uint64) error {
 
 // Seize is to seize one thread which should be done before collecting
 func Seize(pid uint64) error {
-	return Ptrace(syscall.PTRACE_SEIZE, pid, 0, 0)
+	return Ptrace(unix.PTRACE_SEIZE, pid, 0, 0)
 }
 
 // Detach is to end the seizing of one thread
 func Detach(pid uint64) error {
-	return Ptrace(syscall.PTRACE_DETACH, pid, 0, 0)
+	return Ptrace(unix.PTRACE_DETACH, pid, 0, 0)
 }
 
 // Interrupt is to interrupt one thread under seizing
 func Interrupt(pid uint64) error {
-	return Ptrace(syscall.PTRACE_INTERRUPT, pid, 0, 0)
+	return Ptrace(unix.PTRACE_INTERRUPT, pid, 0, 0)
 }
 
 // Continue is to continue one thread being interrupted
 func Continue(pid uint64) error {
-	return Ptrace(syscall.PTRACE_CONT, pid, 0, uint64(syscall.SIGTRAP))
+	return Ptrace(unix.PTRACE_CONT, pid, 0, uint64(syscall.SIGTRAP))
 }
 
 // CatchSyscall is to interrupt the thread at next syscall
 func CatchSyscall(pid uint64) error {
-	return Ptrace(syscall.PTRACE_SYSCALL, pid, 0, 0)
+	return Ptrace(unix.PTRACE_SYSCALL, pid, 0, 0)
 }
 
-// CollectSyscall is to collect the regs when one thread is interrupted
-func CollectSyscall(pid uint64) UserPtRegsArm64 {
-	var regs UserPtRegsArm64
+func CollectSyscall(pid uint64) unix.PtraceRegs {
+	var regs unix.PtraceRegs
 	var iovec syscall.Iovec
 
 	iovec.Base = (*byte)(unsafe.Pointer(&regs))

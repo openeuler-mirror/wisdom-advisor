@@ -70,7 +70,7 @@ wisdomd --policy threadsaffinity --cclaware
 #### 非单核绑定（粗粒度绑定）
 
 ```shell
-wisdomd --policy threadsaffinity --coarsegrain
+wisdomd --policy threadsaffinity --PerCore
 ```
 
 ### 线程分组调度
