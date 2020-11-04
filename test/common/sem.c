@@ -26,7 +26,7 @@ static void *SemAccessThread(void *arg)
 	int i;
         SemVal *tempSemVal = (SemVal *)arg;
         sem_t * temp = &(tempSemVal->semlock);
-	for (i = 0; i < 30; i++) {
+	for (i = 0; i < 60; i++) {
                 sem_wait(temp);
 		sleep(1);
                 sem_post(temp);
@@ -53,7 +53,7 @@ int main()
 		}
 	}
 	
-	sleep(30);
+	sleep(60);
 
         return 0;
 }

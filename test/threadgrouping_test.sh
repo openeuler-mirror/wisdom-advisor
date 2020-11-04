@@ -16,8 +16,9 @@ function do_test() {
 	local group
 	
 	export GOPATH=`cd ../../../../;pwd`
-	"$GOPATH"/pkg/wisdomd --printlog --task net_test --loglevel debug --policy threadsgrouping &>tmp.log &
+	"$GOPATH"/pkg/wisdomd --printlog --loglevel debug &
 	pid=`echo $!`
+	"$GOPATH"/pkg/wisdom --printlog --loglevel debug threadsgrouping --task net_test --IO 1-2 --net 3-4
 	if [  "$pid"x == ""x ]; then
 		echo "start wisdomd fail"
 		rm tmp.log

@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"gitee.com/wisdom-advisor/common/utils"
 	log "github.com/sirupsen/logrus"
+	unix "golang.org/x/sys/unix"
 	"os"
 	"regexp"
 	"strconv"
@@ -65,7 +66,7 @@ func GetPidNSInode(pid uint64) (uint64, error) {
 
 // Setns can the namespace of current process
 func Setns(fd uintptr, flags uintptr) error {
-	if _, _, err := syscall.RawSyscall(syscall.SYS_SETNS, fd, flags, 0); err != 0 {
+	if _, _, err := syscall.RawSyscall(unix.SYS_SETNS, fd, flags, 0); err != 0 {
 		return errors.New("setns fail")
 	}
 	return nil

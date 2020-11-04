@@ -15,17 +15,15 @@
 package policy
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"gitee.com/wisdom-advisor/common/ptrace"
 	"gitee.com/wisdom-advisor/common/sched"
 	"gitee.com/wisdom-advisor/common/utils"
 	log "github.com/sirupsen/logrus"
-	"os"
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -146,12 +144,6 @@ func bindThreadsToGroup(CPUset CPUGroup, threads []*ptrace.ProcessFeature) {
 	}
 }
 
-// PartitionInfo define the format of json script
-type PartitionInfo struct {
-	Io  []string `json:"io"`
-	Net []string `json:"net"`
-}
-
 func stringToInts(ints string) ([]int, error) {
 	var ret []int
 
@@ -183,48 +175,31 @@ func stringToInts(ints string) ([]int, error) {
 	return ret, nil
 }
 
-// ParseConfig is to parse the json script to get the CPU partition
-func ParseConfig(path string) (CPUPartition, error) {
+func ParsePartition(IO string, net string) (CPUPartition, error) {
 	var party CPUPartition
-	var info PartitionInfo
+	IOlist := strings.Split(IO, ",")
+	netList := strings.Split(net, ",")
 	party.FlagCount = make(map[int]int, AssmuedSysCallClassNum)
 
-	file, err := os.Open(path)
-	if err != nil {
-		return party, errors.New("open config fail")
-	}
-	defer file.Close()
-
-	buf := bytes.NewBuffer(make([]byte, 0, limitEnvSize))
-	_, err = buf.ReadFrom(file)
-	if err != nil {
-		return party, errors.New("read config fail")
-	}
-
-	if err := json.Unmarshal(buf.Bytes(), &info); err != nil {
-		return party, err
-	}
-
-	for _, set := range info.Io {
+	for _, set := range IOlist {
 		cpus, err := stringToInts(set)
 		if err != nil {
 			return party, err
 		}
+		log.Debug(cpus)
 		PartitionCreateGroup(&party, cpus, ioAccess)
 	}
-
-	for _, set := range info.Net {
+	for _, set := range netList {
 		cpus, err := stringToInts(set)
 		if err != nil {
 			return party, err
 		}
+		log.Debug(cpus)
 		PartitionCreateGroup(&party, cpus, netAccess)
 	}
-
 	return party, nil
 }
 
-// GenerateDefaultPartitions is to generate default partitions
 func GenerateDefaultPartitions() CPUPartition {
 	var party CPUPartition
 	party.FlagCount = make(map[int]int, AssmuedSysCallClassNum)

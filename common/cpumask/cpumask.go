@@ -136,7 +136,7 @@ func (mask *Cpumask) Weight() int {
 
 func lowBit(mask uint64) int {
 	for i := 0; i < oneMaskBits; i++ {
-		if mask&(1<<i) != 0 {
+		if mask&(1<<uint(i)) != 0 {
 			return i
 		}
 	}

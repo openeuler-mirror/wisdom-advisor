@@ -46,36 +46,6 @@ type ProcessFeature struct {
 // ProcDir is path of proc sysfs
 var ProcDir = "/proc/"
 
-// FutextDetect is to Detect Futex
-func FutextDetect(regs UserPtRegsArm64, process *ProcessFeature) error {
-	if regs.Regs[8] != unix.SYS_FUTEX {
-		return nil
-	}
-	if _, ok := process.SysCount.FutexMap[regs.Regs[0]]; !ok {
-		process.SysCount.FutexMap[regs.Regs[0]] = 1
-	} else {
-		process.SysCount.FutexMap[regs.Regs[0]] = process.SysCount.FutexMap[regs.Regs[0]] + 1
-	}
-	return nil
-}
-
-// ParseSyscall is to Parse syscall info
-func ParseSyscall(regs UserPtRegsArm64, process *ProcessFeature) error {
-	sysMap := map[uint64]func(regs UserPtRegsArm64, process *ProcessFeature) error{
-		unix.SYS_READ:     CollectSockAccess,
-		unix.SYS_WRITE:    CollectSockAccess,
-		unix.SYS_SENDTO:   CollectSockAccess,
-		unix.SYS_RECVFROM: CollectSockAccess,
-		unix.SYS_IO_GETEVENTS: func(regs UserPtRegsArm64, process *ProcessFeature) error {
-			process.SysCount.IOGetEvents = process.SysCount.IOGetEvents + 1
-			return nil
-		},
-	}
-	if handler, ok := sysMap[regs.Regs[8]]; ok {
-		return handler(regs, process)
-	}
-	return nil
-}
 
 func isSocketfd(link string) (bool, uint64) {
 	reg := regexp.MustCompile(`socket:\[(\d+)\]`)
@@ -106,10 +76,7 @@ func isNetSocket(inode uint64) (bool, net.IP) {
 	return false, nil
 }
 
-// CollectSockAccess is to collect net accesses through fd
-func CollectSockAccess(regs UserPtRegsArm64, process *ProcessFeature) error {
-	return collectSockAccess(process, regs.Regs[0])
-}
+
 
 func collectSockAccess(process *ProcessFeature, fd uint64) error {
 	link, err := os.Readlink(fmt.Sprintf("%s/%d/fd/%d", ProcDir, process.Pid, fd))
@@ -126,7 +93,7 @@ func collectSockAccess(process *ProcessFeature, fd uint64) error {
 
 // ParseLoop is the loop which collects syscallinfo
 func ParseLoop(pid uint64, stopCh chan int, process *ProcessFeature, wg *sync.WaitGroup, tgid uint64,
-	ParseSyscallHandler func(regs UserPtRegsArm64, process *ProcessFeature) error) {
+	ParseSyscallHandler func(regs unix.PtraceRegs, process *ProcessFeature) error) {
 	var status syscall.WaitStatus
 	var isEntry = true
 
@@ -195,7 +162,7 @@ out:
 
 // DoCollect is to collect the syscall info of one process during timeout time
 func DoCollect(pid uint64, timeout int,
-	ParseSyscallHandler func(regs UserPtRegsArm64, process *ProcessFeature) error) ([]*ProcessFeature, error) {
+	ParseSyscallHandler func(regs unix.PtraceRegs, process *ProcessFeature) error) ([]*ProcessFeature, error) {
 	var threadsInfo []*ProcessFeature
 	var wg sync.WaitGroup
 	stopCh := make(chan int)

@@ -56,7 +56,7 @@ var retryTasks list.List
 var netAwareOn = false
 var numaAwareOn = false
 var cclAwareOn = false
-var coarseGrain = false
+var PerCore = false
 
 const (
 	cpuGapPct       = 30
@@ -191,7 +191,7 @@ func bindTasksToNuma(tid uint64, name string, numaID int) {
 		return
 	}
 
-	if !isCoarseGrain() {
+	if isPerCore() {
 		node = groupInfo.bindNode.SelectLighterBindNode(topology.TopoTypeCPU)
 	} else {
 		node = groupInfo.bindNode
@@ -493,13 +493,13 @@ func isCclAware() bool {
 	return cclAwareOn
 }
 
-// SwitchCoarseGrain choose cpu futher inside CCL futher if off
-func SwitchCoarseGrain(on bool) {
-	coarseGrain = on
+// SwitchPerCore choose cpu futher inside CCL futher if on
+func SwitchPerCore(on bool) {
+	PerCore = on
 }
 
-func isCoarseGrain() bool {
-	return coarseGrain
+func isPerCore() bool {
+	return PerCore
 }
 
 // SwitchAffinityAware enable detecting thread affinity automaticly
@@ -533,18 +533,13 @@ func Init() error {
 	return nil
 }
 
-// PtraceScanStart start the ptrace scan
-func PtraceScanStart(block *ControlBlock) {
-	log.Info("threads scan on")
-	atomic.StoreInt32(&(block.ptraceScanSwitch), 1)
+func SwitchPtraceScan(block *ControlBlock, on bool){
+	if on{
+		atomic.StoreInt32(&(block.ptraceScanSwitch), 1)
+	}else{
+		atomic.StoreInt32(&(block.ptraceScanSwitch), 0)
+	}
 }
-
-// PtraceScanEnd stop the ptrace scan
-func PtraceScanEnd(block *ControlBlock) {
-	log.Info("threads scan off")
-	atomic.StoreInt32(&(block.ptraceScanSwitch), 0)
-}
-
 // ShouldStartPtraceScan indicate whether scanning should be done
 func ShouldStartPtraceScan(block *ControlBlock) bool {
 	res := atomic.LoadInt32(&(block.ptraceScanSwitch))

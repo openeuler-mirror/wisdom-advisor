@@ -39,7 +39,7 @@ func init() {
 func setAffinity(tid uint64, cpu []int) error {
 	var mask cpuSet
 	for _, cpuID := range cpu {
-		mask[cpuID/cpuBits] |= 1 << (cpuID % cpuBits)
+		mask[cpuID/cpuBits] |= 1 << uint(cpuID % cpuBits)
 	}
 	if _, _, errno := syscall.RawSyscall(syscall.SYS_SCHED_SETAFFINITY,
 		uintptr(tid), uintptr(len(mask)*cpuBytes), uintptr(unsafe.Pointer(&mask[0]))); errno != 0 {
