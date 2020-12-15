@@ -32,7 +32,7 @@ make check
 make install
 ```
 ## 如何使用
-wisdomd是守护进程，wisdomd是客户端。
+wisdomd是守护进程，wisdom是客户端。
 获取帮助信息
 ```
 wisdomd -h
